@@ -6,10 +6,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.3.6",
     "morgan": "^1.10.0",
-<<<<<<< HEAD
-=======
     "multer": "^1.4.5-lts.1",
->>>>>>> 480ea23b1e538fbd8b750bbe56241e1112d95255
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0"
