@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const PostsSchema = new mongoose.Schema({
-      postId: {
-        type: String,
-        required: true,
-      }, 
       nickname: {
         type: String,
         required: true
@@ -28,11 +24,11 @@ const PostsSchema = new mongoose.Schema({
       },
       likeCnt: {
         type: Number,
-        required: true,
+        default: 0,
       },
       commentCnt: {
         type: Number,
-        required: true,
+        default: 0,
       },
       userLike: {
         type: Array,
@@ -40,4 +36,4 @@ const PostsSchema = new mongoose.Schema({
       }
     });
 
-    module.exports = mongoose.model("Posts", PostsSchema,);
+module.exports = mongoose.model("Posts", PostsSchema,);
