@@ -15,10 +15,12 @@ const UsersSchema = new Schema({
         required: true,
     },
 })
-UsersSchema.virtual('userId').get(function () {
-    return this._id.toHexString()
-})
-UsersSchema.set('toJSON', {
-    virtuals: true,
-})
-module.exports = mongoose.model('User', UsersSchema);
+// UsersSchema.virtual('userId').get(function () {
+//     return this._id.toHexString()
+// })
+// UsersSchema.set('toJSON', {
+//     virtuals: true,
+// })
+
+
+module.exports = mongoose.model('User', UsersSchema,);
