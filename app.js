@@ -6,6 +6,9 @@ const app = express();
 const connect = require("./schemas") 
 const port = 3000;
 
+const authMiddleware = require('./middlewares/auth-middleware')
+
+
 connect();
 
 const postsRouter = require("./routes/posts");
