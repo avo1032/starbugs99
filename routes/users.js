@@ -1,7 +1,6 @@
 // require("dotenv").config();
 const express = require("express");
 // const bcrypt = requrie("bcrypt");
-const mongoose = require("mongoose");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const User = require("../schemas/users");
