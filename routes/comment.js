@@ -1,8 +1,9 @@
 const express = require('express');
-const posts = require('../schemas/posts');
+const Posts = require('../schemas/posts');
 const { connect } = require('mongoose');
-const comment = require('../schemas/comment');
+const Comment = require('../schemas/comment');
 const router = express.Router();
+const authMiddleware = require('../middlewares/auth-middleware')
 //middleware 추가해야함
 connect();
 
@@ -15,7 +16,7 @@ router.get('/comment/:postId', authMiddleware, async (req, res, next) => {
         for (let i = 0; i < comments.length; i++) {
             if (
                 res.locals.user != null &&
-                comments[i]['author'] == res.locals['user']['nickname']
+                comments[i]['nickname'] == res.locals['user']['nickname']
             ) {
                 comments[i]['mine'] = true
             } else comments[i]['mine'] = false
@@ -27,6 +28,7 @@ router.get('/comment/:postId', authMiddleware, async (req, res, next) => {
     }
 });
 
+
 //댓글 작성
 router.post('/comment', authMiddleware, async (req, res) => {
     const recentComment = await Comment.find().sort('-commentId').limit(1)
@@ -37,7 +39,7 @@ router.post('/comment', authMiddleware, async (req, res) => {
     const nickname = res.locals['user']['nickname'] //local에서 나누어 가져옴
     const { postId, content } = req.body
     const date = new Date(+new Date() + 3240 * 10000).toISOString().replace("T", " ").replace(/\..*/, '');
-    await Comment.create({ commentId, postId, content, author, date })
+    await Comment.create({ commentId, postId, content, nickname, date })
     res.status(200).send({
         result: "success",
       });
@@ -51,12 +53,14 @@ router.delete('/comment/:commentId', async (req, res) => {
     res.send({ result: 'success' })
 });
 
+
 //댓글 수정
-router.patch('/comment/', async (req, res) => {
+router.patch('/comment/:commentId', async (req, res) => {
     const { content, commentId } = req.body
     await Comment.updateOne({ commentId }, { $set: { content } })
     res.send({ result: 'success' })
 });
+
 
 
 module.exports = router; 
