@@ -6,12 +6,10 @@ const commentSchema = new Schema({
         unique: true,
         required: true
       },
-
     postId: {
         type: Number,
         required: true,
     },
-
     content: {
         type: String,
         required: true,
@@ -24,6 +22,6 @@ const commentSchema = new Schema({
         type: String,
         required: true,
     },
-})
+});
 
 module.exports = mongoose.model('Comment', commentSchema)
