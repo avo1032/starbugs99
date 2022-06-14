@@ -8,6 +8,7 @@ const User = require("../schemas/users");
 const authMiddleware = require("../middlewares/auth-middleware");
 const { Router } = require("express");
 const router = express.Router();
+const saltRounds = 10;
 
 
 const postUsersSchema = Joi.object({
@@ -47,17 +48,31 @@ router.post("/register", async (req, res) => {
         });
         return;
       }
-  
+      bcrypt.genSalt(saltRounds, (err,salt) =>{
+        if(err)
+          return res.status(500).json({
+            registerSuccess: false,
+            message: "비밀번호 해쉬화에 실패했습니다.",
+          });
+       bcrypt.hash(password, salt, (err, salt) =>{
+        if(err)
+        return res.status(500).json({
+            registerSuccess: false,
+          message: "비밀번호 해쉬화에 실패했습니다.",
+        });
+        password = hash;
+       });   
+      });
       const user = new User({ userId, nickname, password });
       await user.save();
-  
+      
       res.status(201).send({ message: "회원가입이 완료!" });
     } catch (err) {
       console.log(err);
       res.status(400).send({
         errorMessage: "요청한 데이터 형식이 올바르지 않습니다.",
       });
-    }
+    } 
   });
 
 //로그인

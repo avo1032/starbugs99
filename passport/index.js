@@ -1,40 +1,67 @@
-// const passport = require("passport"); // passport 미들웨어를 등록하기 위한 묘듈
-// const { Strategy: LocalStrategy } = require("passport-local"); // 사용자 인증을 구현할 Strategy(나중에 JWT의 Strategy와 이름이 겹쳐서 다른이름 선언)
-// const bcrypt = require("bcrypt"); // 해쉬된 비밀번호를 비교하기 위한 모듈
+const express = reuqire("express");
+const User = require("../schemas/users");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
-// const User = require("../schemas/users"); // 데이터 조회
+authRouter.post("/login", (req,res) =>{
+    console.log(req.body);
+});
 
-// //passport 옵션 설정 
-// // usernameFieId는 passport가 읽을 사용자 아이디 확인
-// // passwordFieId는 passport가 읽을 사용자 비밀번호 확인
-// const passportConfig = { usernameFieId: "userId", passwordFieId: "password" };
+authRouter.post("/register", async (req, res) => {
+    const { userId, nickname, password } = req.body;
+    // 빈값이 오면 팅겨내기
+    if(
+        userId === "" ||
+        nickname === "" ||
+        password === ""   
+        ) {
+        return res.status(400).json({ regisrerSuccess: false, Messsage: "정보를 입력하세요" });
+    }
+    // 유저 아이디가 같지 않으면 팅겨내기
+    const sameUserId = await User.findOne({ userId});
+  if (sameUserId !== null) {
+    return res.status(400).json({
+      registerSuccess: false,
+      message: "이미 존재하는 아이디입니다",
+    });
+  }
+  // 닉네임이 동일하면 팅겨내기
+  const sameNickNameUser = await User.findOne({ nickname });
+  if (sameNickNameUser !== null) {
+    return res.status(400).json({
+      registerSuccess: false,
+      message: "이미 존재하는 닉네임입니다.",
+    });
+  }
+//솔트 생성 및 해쉬화 진행
+  bcrypt.genSalt(saltRounds, (err, salt) =>{
+    //솔트 생성 실패시
+    if(err)
+    return res.status(500).json({
+        registerSuccess: false,
+        message: "비밀번호 해쉬화에 실패했습니다.",
+    });
+    // salt 생성에 성공시 hash진행
 
+    bcrypt.hash(password,salt, async (err,hash) =>{
+        if(err)
+        return res.status(500).json({
+            registerSuccess: false,
+        message: "비밀번호 해쉬화에 실패했습니다.",
+        });
+    //비밀번호를 해쉬된 값으로 대체
+    password = hash;
 
-// //매개변수로 3개를 받는다( 아이디, 비밀번호, 인증의 결과를 호출할 done)
-// const passportVerify = async ( userId, password, done ) => {
-//     try{
-//         //유저 아이디로 일치하는 유저 데이터 검색
-//         const user = await User.findOne({where: { user_id: userId }});
-//         //검색된 유저 데이터가 없다면 에러 표시
-//         if(!user){
-//             done(null,false,{reason: "존재하지 않는 사용자 입니다."});
-//             return;
-//         }
-//         //검색된 유저 데이터가 있다면 유저 해쉬된 비밀번호 비교
-//         const compareResult = await bcrypt.compare(password, user.password);
-//        //해쉬된 비밀번호가 같다면 유저 데이터 객체 전송
-//         if(compareResult){
-//             done(null, user);
-//             return;
-//         }
-//         //비밀번호가 다를경우 에러 표시
-//         done(null,false,{reason: "올바르지 않은 비밀번호 입니다."});
-//     }catch{error}{
-//         console.error(error);
-//     }
-// };
+    const user =await new User({
+        userId,
+        nickname,
+        password,
+    });
 
-// module.exports = () => {
-//     //LocalStrategy에 passportConfig,passportVerify를 인자로 넣어 local로 등록
-//     passport.use("local",new LocalStrategy(passportConfig,passportVerify));
-// };
+    user.save((err) => {
+        if (err) return res.status(400).json({ registerSuccess: fasle, message: err });
+    });
+    return res.json({ registerSuccess: true });
+    });
+  });
+});
