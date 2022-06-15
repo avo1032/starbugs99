@@ -1,22 +1,10 @@
-// require("dotenv").config();
+
 const express = require("express");
-// const bcrypt = requrie("bcrypt");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const User = require("../schemas/users");
-const authMiddleware = require("../middlewares/auth-middleware");
-const { Router } = require("express");
 const router = express.Router();
 
-/*const postUsersSchema = Joi.object({
-    // userId: 4~12글자, 알파벳 대소문자, 숫자 가능
-    userId: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{4,12}$")).required(),
-    // nickname: 2~16글자, 알파벳 대소문자, 숫자, 한글 가능
-    nickname: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]{2,16}$"))
-      .required(),
-    password: Joi.string().min(6).max(18).required(),
-  });*/
 
   const postUsersSchema = Joi.object({
     userId: Joi
@@ -63,14 +51,13 @@ router.post("/register", async (req, res) => {
 
 //로그인
   const postAuthSchema = Joi.object({
-    userId: Joi.string().min(3).max(12).required(),
+    userId: Joi.string().required(),
     password: Joi.string().required(),
   });
   
-  
   router.post("/login", async (req, res) => {
     try {
-    //  const { userId, password } = await postAuthSchema.validateAsync(req.body);
+      console.log(userId, password);
       const { userId, password } = await (req.body);
       const user = await User.findOne({ userId, password }).exec();
       if (!user) {

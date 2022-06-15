@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
 const PostsSchema = new mongoose.Schema({
+    postId: {
+    type: String,
+    required: true,
+   }, 
+      userId: {
+      type: String,
+      required: true,
+    },
       nickname: {
         type: String,
         required: true
@@ -16,17 +24,12 @@ const PostsSchema = new mongoose.Schema({
       date: {
         type: Date,
         default: Date.now(),
-        
       },
       imageUrl: { 
         type: String,
         required: true
       },
       likeCnt: {
-        type: Number,
-        default: 0,
-      },
-      commentCnt: {
         type: Number,
         default: 0,
       },
