@@ -4,7 +4,8 @@ const User = require("../schemas/users.js");
 module.exports = (req, res, next) => {
     const { authorization } = req.headers; 
 
-    const [tokenType, tokenValue] = authorization.split(" ");
+    const [tokenType, tokenValue] = authorization.split(' ');
+
 
     if (tokenType !== 'Bearer') {
       res.status(401).send({
@@ -15,9 +16,7 @@ module.exports = (req, res, next) => {
 
     try {
       const { userId } = jwt.verify(tokenValue, "my-secret-key");
-
-      User.findById(userId)
-      .exec()
+      User.findOne({userId: userId})
       .then((user) => {
           res.locals.user = user;
           next();
