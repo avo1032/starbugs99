@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Posts = require("../schemas/posts");
 const Users = require('../schemas/users');
-
+const authMiddleware = require("../middlewares/auth-middleware");
 const { v4: uuid } = require("uuid");
 const mime = require("mime-types");
 const multer = require("multer");
 
-const { response } = require("express");
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "./uploads"),
     filename: (req, file, cb) => cb(null, `${uuid()}.${mime.extension(file.mimetype)}`),
@@ -19,7 +18,6 @@ const upload = multer({ storage,
 });
 
 
-///////revise
 router.get("/posts", upload.single("imageTest"),async (req, res) => {   
     const postslist = await Posts.find();
     const mostLikedPost = await Posts.find().sort({likeCnt: -1}).limit(5)
@@ -30,6 +28,7 @@ router.get("/posts", upload.single("imageTest"),async (req, res) => {
 
 
 router.get("/detail/:postId", async (req, res) => {
+    console.log(req.params)
     const { postId } = req.params;
     const [post] = await Posts.find({_id: postId});
 
@@ -39,28 +38,25 @@ router.get("/detail/:postId", async (req, res) => {
 })
 
 // 게시글 작성
-router.post("/posts", upload.single("imageTest"), authMiddleware, async (req, res) => {   //upload.single(imageTest)의 'img'는 formData 의 key값 / img key 의 value값을 서버의 지정된 폴더에 저장.
+router.post("/posts", upload.single("imageTest"), authMiddleware, async (req, res) => {
     const { title, content } = req.body;
-
     const { userId } = res.locals.user;
     const imageUrl = req.file.filename;
 
-    const [user] = await Users.find({_id: userId});
+    const user = await Users.findOne({userId: userId}).exec();
     const nickname = user.nickname;
 
-    const imageName = req.file.filename;
     const createPosts = await Posts.create({ title: title, imageUrl: imageUrl,
         content: content, nickname: nickname,})
-    res.json({ posts: createPosts })
+    res.json({ createPosts })
 });
-
 
 
 router.delete("/posts/:postId", authMiddleware, async (req, res) => {
     const { postId } = req.params;
     const { userId } = res.locals.user;
 
-    const [user] = await Users.find({_id: userId});
+    const [user] = await Users.find({userId: userId});
     const [user2] = await Posts.find({_id: postId});
     
     if(user.nickname != user2.nickname){
@@ -72,7 +68,7 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
     if(!existsPosts.length){
         res.status(400).json({ result: false });
     }else{
-        await Boards.deleteOne({ _id: postId });
+        await Posts.deleteOne({ _id: postId });
         res.status(200).json({ result: true });
     }
 });
@@ -82,13 +78,15 @@ router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async 
     const { postId } = req.params;
     const { title, content } = req.body;
     const imageUrl = {imageUrl: req.file.filename};
-    
+    console.log(req.params);
+    console.log(req.body);
+    console.log(req.file.filename);
     
     const existsPosts = await Posts.find({ _id: postId })
     if(!existsPosts.length){
         res.status(400).json({ result: false });
     }else{
-        await Posts.updateOne({ _id: boardsId }, { $set: { title, content, imageUrl } });
+        await Posts.updateOne({ _id: postId }, { $set: { title: title, content: content, imageUrl: imageUrl } });
         res.json({ result: "success" });
     }
 });
@@ -97,23 +95,23 @@ router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async 
 //좋아요 구현
 router.post('/posts/like', async (req, res) => {
     const { userId, postId } = req.body;
-    const userPost = await posts.findOne({postId}).exec();
+    const userPost = await Posts.findOne({postId}).exec();
     const likeCnt = userPost.userLike.length
     const foundUser = userPost.userLike.find(i => i === userId)  //element로 찾음
     if(foundUser)  {
         await userPost.updateOne({$pull:{userLike: userId}})  //dislike
         await userPost.updateOne({$set: {likeCnt: likeCnt}})
-      }else {
+    }else {
         await userPost.updateOne({$push:{userLike: userId}}) //like push
         await userPost.updateOne({$set: {likeCnt: likeCnt}})
-      }
-      const newuserPost = await Posts.findOne({postId}).exec();
-      const newuserLike = newuserPost.userLike
+    }
+    const newuserPost = await Posts.findOne({postId}).exec();
+    const newuserLike = newuserPost.userLike
     
-      newuserPost.likeCnt = newuserPost.userLike.length
-      const newLikecnt = newuserPost.likeCnt
+    newuserPost.likeCnt = newuserPost.userLike.length
+    const newLikecnt = newuserPost.likeCnt
 
-      res.json({newuserLike, newLikecnt})
+    res.json({newuserLike, newLikecnt})
 });
 
 
