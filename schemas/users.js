@@ -3,8 +3,6 @@ const mongoose = require('mongoose')
 
 const { Schema } = mongoose
 const UsersSchema = new Schema({
-
-
     userId: {
         type: String,
         required: true,

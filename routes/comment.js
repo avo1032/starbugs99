@@ -6,6 +6,7 @@ const router = express.Router();
 const authMiddleware = require('../middlewares/auth-middleware')
 
 
+
 //해당 포스트의 모든 댓글 조회
 router.get('/comment/:postId', authMiddleware, async (req, res, next) => {
     try {
@@ -44,12 +45,14 @@ router.post('/comment', authMiddleware, async (req, res) => {
 });
 
 
+
 //댓글 삭제
 router.delete('/comment/:commentId', async (req, res) => {
     const { commentId } = req.params
     await Comment.deleteOne({ commentId })
     res.send({ result: 'success' })
 });
+
 
 
 //댓글 수정
@@ -61,3 +64,5 @@ router.patch('/comment/:commentId', async (req, res) => {
 
 
 module.exports = router; 
+
+

@@ -48,10 +48,9 @@ router.post("/register", async (req, res) => {
         });
         return;
       }
-  
+
       const user = new User({ userId, nickname, password });
       await user.save();
-  
       res.status(201).send({ message: "회원가입이 완료!" });
     } catch (err) {
       console.log(err);
@@ -67,6 +66,7 @@ router.post("/register", async (req, res) => {
     userId: Joi.string().min(3).max(12).required(),
     password: Joi.string().required(),
   });
+  
   
   router.post("/login", async (req, res) => {
     try {
