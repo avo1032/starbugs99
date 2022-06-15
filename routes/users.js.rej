@@ -1,0 +1,9 @@
+diff a/routes/users.js b/routes/users.js	(rejected hunks)
+@@ -7,7 +7,6 @@
+ const router = express.Router();
+ 
+ const postUsersSchema = Joi.object({
+-    // nickname: 2~16글자, 알파벳 대소문자, 숫자, 한글 가능
+     userId: Joi
+         .string()
+         .required(),
