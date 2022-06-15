@@ -1,4 +1,3 @@
-
 const express = require("express");
 const userRouter = require("./routes/users");
 const cors = require("cors");
@@ -28,7 +27,6 @@ app.use("/api", [postsRouter], [usersRouter], [commentRouter]);
 app.get("/", (req,res) =>{
     res.send("test!!")
 });
-
 
 
 app.listen(port,() =>{

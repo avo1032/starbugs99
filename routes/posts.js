@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Posts = require("../schemas/posts");
 const Users = require('../schemas/users');
+
 const authMiddleware = require("../middlewares/auth-middleware");
 const { v4: uuid } = require("uuid");
 const mime = require("mime-types");
@@ -18,6 +19,7 @@ const upload = multer({ storage,
 });
 
 
+//게시글 전체조회 및 좋아요 top5
 router.get("/posts", upload.single("imageTest"),async (req, res) => {   
     const postslist = await Posts.find();
     const mostLikedPost = await Posts.find().sort({likeCnt: -1}).limit(5)
@@ -27,6 +29,7 @@ router.get("/posts", upload.single("imageTest"),async (req, res) => {
 });
 
 
+//게시글 상세 조회
 router.get("/detail/:postId", async (req, res) => {
     console.log(req.params)
     const { postId } = req.params;
@@ -37,33 +40,33 @@ router.get("/detail/:postId", async (req, res) => {
     })
 })
 
+
 // 게시글 작성
 router.post("/posts", upload.single("imageTest"), authMiddleware, async (req, res) => {
     const { title, content } = req.body;
     const { userId } = res.locals.user;
     const imageUrl = req.file.filename;
-
     const user = await Users.findOne({userId: userId}).exec();
     const nickname = user.nickname;
-
     const createPosts = await Posts.create({ title: title, imageUrl: imageUrl,
         content: content, nickname: nickname,})
     res.json({ createPosts })
 });
 
 
+
+//게시글 삭제
 router.delete("/posts/:postId", authMiddleware, async (req, res) => {
     const { postId } = req.params;
     const { userId } = res.locals.user;
 
     const [user] = await Users.find({userId: userId});
     const [user2] = await Posts.find({_id: postId});
-    
+
     if(user.nickname != user2.nickname){
         res.res.status(400).send({ errMessage: '작성자만 삭제할 수 있습니다.' });
         return;
     }
-    
     const existsPosts = await Posts.find({ _id: postId })
     if(!existsPosts.length){
         res.status(400).json({ result: false });
@@ -74,6 +77,7 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
 });
 
 
+//게시글 수정
 router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async (req, res) => {   // 이미지 수정 미구현
     const { postId } = req.params;
     const { title, content } = req.body;
@@ -81,6 +85,7 @@ router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async 
     console.log(req.params);
     console.log(req.body);
     console.log(req.file.filename);
+
     
     const existsPosts = await Posts.find({ _id: postId })
     if(!existsPosts.length){
