@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Posts = require("../schemas/posts");
 const Users = require('../schemas/users');
+const authMiddleware = require('../middlewares/auth-middleware')
 
 const { v4: uuid } = require("uuid");
 const mime = require("mime-types");
@@ -18,8 +19,7 @@ const upload = multer({ storage,
     }
 });
 
-
-///////revise
+//게시글 전체조회 및 좋아요 top5
 router.get("/posts", upload.single("imageTest"),async (req, res) => {   
     const postslist = await Posts.find();
     const mostLikedPost = await Posts.find().sort({likeCnt: -1}).limit(5)
@@ -29,6 +29,7 @@ router.get("/posts", upload.single("imageTest"),async (req, res) => {
 });
 
 
+//게시글 상세 조회
 router.get("/detail/:postId", async (req, res) => {
     const { postId } = req.params;
     const [post] = await Posts.find({_id: postId});
@@ -38,13 +39,14 @@ router.get("/detail/:postId", async (req, res) => {
     })
 })
 
+
 // 게시글 작성
 router.post("/posts", upload.single("imageTest"), authMiddleware, async (req, res) => {   //upload.single(imageTest)의 'img'는 formData 의 key값 / img key 의 value값을 서버의 지정된 폴더에 저장.
     const { title, content } = req.body;
 
     const { userId } = res.locals.user;
     const imageUrl = req.file.filename;
-
+    console.log()
     const [user] = await Users.find({_id: userId});
     const nickname = user.nickname;
 
@@ -55,19 +57,18 @@ router.post("/posts", upload.single("imageTest"), authMiddleware, async (req, re
 });
 
 
-
+//게시글 삭제
 router.delete("/posts/:postId", authMiddleware, async (req, res) => {
     const { postId } = req.params;
     const { userId } = res.locals.user;
 
     const [user] = await Users.find({_id: userId});
     const [user2] = await Posts.find({_id: postId});
-    
+
     if(user.nickname != user2.nickname){
         res.res.status(400).send({ errMessage: '작성자만 삭제할 수 있습니다.' });
         return;
     }
-    
     const existsPosts = await Posts.find({ _id: postId })
     if(!existsPosts.length){
         res.status(400).json({ result: false });
@@ -78,11 +79,11 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
 });
 
 
+//게시글 수정
 router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async (req, res) => {   // 이미지 수정 미구현
     const { postId } = req.params;
     const { title, content } = req.body;
     const imageUrl = {imageUrl: req.file.filename};
-    
     
     const existsPosts = await Posts.find({ _id: postId })
     if(!existsPosts.length){
@@ -97,7 +98,7 @@ router.patch("/posts/:postId",upload.single("imageTest"), authMiddleware, async 
 //좋아요 구현
 router.post('/posts/like', async (req, res) => {
     const { userId, postId } = req.body;
-    const userPost = await posts.findOne({postId}).exec();
+    const userPost = await Posts.findOne({postId}).exec();
     const likeCnt = userPost.userLike.length
     const foundUser = userPost.userLike.find(i => i === userId)  //element로 찾음
     if(foundUser)  {

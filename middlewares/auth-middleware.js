@@ -3,7 +3,6 @@ const User = require("../schemas/users.js");
 
 module.exports = (req, res, next) => {
     const { authorization } = req.headers; 
-
     const [tokenType, tokenValue] = authorization.split(" ");
 
     if (tokenType !== 'Bearer') {
@@ -12,16 +11,15 @@ module.exports = (req, res, next) => {
       });
       return;
     }
-
     try {
       const { userId } = jwt.verify(tokenValue, "my-secret-key");
 
-      User.findById(userId)
-      .exec()
+      User.findOne(userId)
       .then((user) => {
           res.locals.user = user;
           next();
       });
+      
     } catch (error) {
       res.status(401).send({
           errorMessage: "로그인 후 사용하세요.",

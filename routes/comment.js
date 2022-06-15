@@ -4,8 +4,6 @@ const { connect } = require('mongoose');
 const Comment = require('../schemas/comment');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth-middleware')
-//middleware 추가해야함
-connect();
 
 
 //해당 포스트의 모든 댓글 조회
@@ -60,7 +58,6 @@ router.patch('/comment/:commentId', async (req, res) => {
     await Comment.updateOne({ commentId }, { $set: { content } })
     res.send({ result: 'success' })
 });
-
 
 
 module.exports = router; 
